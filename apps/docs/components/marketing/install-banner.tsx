@@ -5,13 +5,13 @@ import {ArrowRightIcon} from "@nextui-org/shared-icons";
 import {clsx} from "@nextui-org/shared-utils";
 import NextLink from "next/link";
 import {Code} from "@nextui-org/react";
+import {usePostHog} from "posthog-js/react";
 
 import {FeaturesGrid} from "./features-grid";
 
 import {sectionWrapper, subtitle, title} from "@/components/primitives";
 import {GithubIcon, NoteLinearIcon, NextJsIcon} from "@/components/icons";
 import {useIsMounted} from "@/hooks/use-is-mounted";
-import {trackEvent} from "@/utils/va";
 
 const bannerSuggestions = [
   {
@@ -25,7 +25,7 @@ const bannerSuggestions = [
     title: "NextUI + Next.js",
     description: (
       <>
-        NextUI is fully compatible with the new Next.js 13 <Code>app/</Code> directory structure.
+        NextUI is fully compatible with the new Next.js <Code>app/</Code> directory structure.
       </>
     ),
     icon: <NextJsIcon className="text-pink-500" />,
@@ -35,6 +35,8 @@ const bannerSuggestions = [
 
 export const InstallBanner = () => {
   const isMounted = useIsMounted();
+
+  const posthog = usePostHog();
 
   return (
     <section
@@ -70,8 +72,8 @@ export const InstallBanner = () => {
               href="/docs/guide/installation"
               radius="full"
               size="md"
-              onClick={() => {
-                trackEvent("InstallBanner - Get Started", {
+              onPress={() => {
+                posthog.capture("InstallBanner - Get Started", {
                   action: "press",
                   category: "landing-page",
                   data: "/docs/guide/installation",
@@ -89,8 +91,8 @@ export const InstallBanner = () => {
               size="md"
               startContent={<GithubIcon />}
               variant="bordered"
-              onClick={() => {
-                trackEvent("InstallBanner - Github", {
+              onPress={() => {
+                posthog.capture("InstallBanner - Github", {
                   action: "press",
                   category: "landing-page",
                   data: "https://github.com/nextui-org/nextui",

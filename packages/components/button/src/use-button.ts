@@ -1,9 +1,10 @@
 import type {ButtonVariantProps} from "@nextui-org/theme";
 import type {AriaButtonProps} from "@nextui-org/use-aria-button";
-import type {HTMLNextUIProps, PropGetter} from "@nextui-org/system";
 import type {ReactNode} from "react";
 import type {RippleProps} from "@nextui-org/ripple";
+import type {HTMLNextUIProps, PropGetter} from "@nextui-org/system";
 
+import {useProviderContext} from "@nextui-org/system";
 import {dataAttr} from "@nextui-org/shared-utils";
 import {ReactRef} from "@nextui-org/react-utils";
 import {MouseEventHandler, useCallback} from "react";
@@ -13,7 +14,7 @@ import {useDOMRef, filterDOMProps} from "@nextui-org/react-utils";
 import {button} from "@nextui-org/theme";
 import {isValidElement, cloneElement, useMemo} from "react";
 import {useAriaButton} from "@nextui-org/use-aria-button";
-import {useHover} from "@react-aria/interactions";
+import {PressEvent, useHover} from "@react-aria/interactions";
 import {SpinnerProps} from "@nextui-org/spinner";
 import {useRipple} from "@nextui-org/ripple";
 
@@ -55,6 +56,7 @@ interface Props extends HTMLNextUIProps<"button"> {
   /**
    * The native button click event handler.
    * use `onPress` instead.
+   * @deprecated
    */
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
@@ -65,6 +67,7 @@ export type UseButtonProps = Props &
 
 export function useButton(props: UseButtonProps) {
   const groupContext = useButtonGroupContext();
+  const globalContext = useProviderContext();
   const isInGroup = !!groupContext;
 
   const {
@@ -76,16 +79,16 @@ export function useButton(props: UseButtonProps) {
     autoFocus,
     className,
     spinner,
+    isLoading = false,
+    disableRipple: disableRippleProp = false,
     fullWidth = groupContext?.fullWidth ?? false,
+    radius = groupContext?.radius,
     size = groupContext?.size ?? "md",
     color = groupContext?.color ?? "default",
     variant = groupContext?.variant ?? "solid",
-    disableAnimation = groupContext?.disableAnimation ?? false,
-    radius = groupContext?.radius,
-    disableRipple = groupContext?.disableRipple ?? false,
+    disableAnimation = groupContext?.disableAnimation ?? globalContext?.disableAnimation ?? false,
     isDisabled: isDisabledProp = groupContext?.isDisabled ?? false,
     isIconOnly = groupContext?.isIconOnly ?? false,
-    isLoading = false,
     spinnerPlacement = "start",
     onPress,
     onClick,
@@ -96,6 +99,8 @@ export function useButton(props: UseButtonProps) {
   const shouldFilterDOMProps = typeof Component === "string";
 
   const domRef = useDOMRef(ref);
+
+  const disableRipple = (disableRippleProp || globalContext?.disableRipple) ?? disableAnimation;
 
   const {isFocusVisible, isFocused, focusProps} = useFocusRing({
     autoFocus,
@@ -131,22 +136,22 @@ export function useButton(props: UseButtonProps) {
     ],
   );
 
-  const {onClick: onRippleClickHandler, onClear: onClearRipple, ripples} = useRipple();
+  const {onPress: onRipplePressHandler, onClear: onClearRipple, ripples} = useRipple();
 
-  const handleClick = useCallback(
-    (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handlePress = useCallback(
+    (e: PressEvent) => {
       if (disableRipple || isDisabled || disableAnimation) return;
-      domRef.current && onRippleClickHandler(e);
+      domRef.current && onRipplePressHandler(e);
     },
-    [disableRipple, isDisabled, disableAnimation, domRef, onRippleClickHandler],
+    [disableRipple, isDisabled, disableAnimation, domRef, onRipplePressHandler],
   );
 
   const {buttonProps: ariaButtonProps, isPressed} = useAriaButton(
     {
       elementType: as,
       isDisabled,
-      onPress,
-      onClick: chain(onClick, handleClick),
+      onPress: chain(onPress, handlePress),
+      onClick,
       ...otherProps,
     } as AriaButtonProps,
     domRef,

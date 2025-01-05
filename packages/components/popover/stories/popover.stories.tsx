@@ -81,6 +81,11 @@ export default {
         type: "boolean",
       },
     },
+    shouldCloseOnScroll: {
+      control: {
+        type: "boolean",
+      },
+    },
     disableAnimation: {
       control: {
         type: "boolean",
@@ -89,6 +94,11 @@ export default {
     children: {
       control: {
         disable: true,
+      },
+    },
+    shouldBlockScroll: {
+      control: {
+        type: "boolean",
       },
     },
   },
@@ -106,7 +116,6 @@ const defaultProps = {
   placement: "top",
   offset: 7,
   defaultOpen: false,
-  disableAnimation: false,
 };
 
 const content = (
@@ -118,11 +127,11 @@ const content = (
   </PopoverContent>
 );
 
-const Template = (args: PopoverProps) => {
+const Template = ({label = "Open Popover", ...args}: PopoverProps & {label: string}) => {
   return (
     <Popover {...args}>
       <PopoverTrigger>
-        <Button disableAnimation={!!args.disableAnimation}>Open Popover</Button>
+        <Button>{label}</Button>
       </PopoverTrigger>
       {content}
     </Popover>
@@ -133,7 +142,7 @@ const WithTitlePropsTemplate = (args: PopoverProps) => {
   return (
     <Popover {...args}>
       <PopoverTrigger>
-        <Button disableAnimation={!!args.disableAnimation}>Open Popover</Button>
+        <Button>Open Popover</Button>
       </PopoverTrigger>
       <PopoverContent>
         {(titleProps) => (
@@ -569,5 +578,46 @@ export const CustomMotion = {
         },
       },
     },
+  },
+};
+
+export const WithFallbackPlacements = {
+  args: {
+    ...defaultProps,
+  },
+  render: (args) => (
+    <div className="relative h-screen w-screen">
+      <div className="absolute top-0 left-0 p-8 flex gap-4">
+        <Template {...args} label="placement: top" placement="top" />
+        <Template {...args} label="placement: bottom" placement="bottom" />
+      </div>
+      <div className="absolute bottom-0 left-0 p-8 flex gap-4">
+        <Template {...args} label="placement: bottom" placement="bottom" />
+        <Template {...args} label="placement: top" placement="top" />
+      </div>
+      <div className="absolute left-0 top-1/2 -translate-y-1/2 p-8 flex flex-col gap-4">
+        <Template {...args} label="placement: left" placement="left" />
+        <Template {...args} label="placement: right" placement="right" />
+      </div>
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 p-8 flex flex-col gap-4">
+        <Template {...args} label="placement: right" placement="right" />
+        <Template {...args} label="placement: left" placement="left" />
+      </div>
+    </div>
+  ),
+};
+
+export const WithShouldBlockScroll = {
+  render: (args) => {
+    return (
+      <div className="flex gap-8">
+        <Template {...args} label="shouldBlockScroll: false" shouldBlockScroll={false} />
+        <Template {...args} label="shouldBlockScroll: true" shouldBlockScroll={true} />
+      </div>
+    );
+  },
+
+  args: {
+    ...defaultProps,
   },
 };

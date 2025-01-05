@@ -4,18 +4,23 @@ import type {AriaButtonProps} from "@nextui-org/use-aria-button";
 import type {RippleProps} from "@nextui-org/ripple";
 
 import {card} from "@nextui-org/theme";
-import {MouseEvent, ReactNode, useCallback, useMemo} from "react";
+import {MouseEventHandler, ReactNode, useCallback, useMemo} from "react";
 import {chain, mergeProps} from "@react-aria/utils";
 import {useFocusRing} from "@react-aria/focus";
-import {useHover} from "@react-aria/interactions";
+import {PressEvent, useHover} from "@react-aria/interactions";
 import {useAriaButton} from "@nextui-org/use-aria-button";
-import {HTMLNextUIProps, mapPropsVariants, PropGetter} from "@nextui-org/system";
-import {clsx, dataAttr} from "@nextui-org/shared-utils";
+import {
+  HTMLNextUIProps,
+  mapPropsVariants,
+  PropGetter,
+  useProviderContext,
+} from "@nextui-org/system";
+import {clsx, dataAttr, objectToDeps} from "@nextui-org/shared-utils";
 import {ReactRef, filterDOMProps} from "@nextui-org/react-utils";
 import {useDOMRef} from "@nextui-org/react-utils";
 import {useRipple} from "@nextui-org/ripple";
 
-export interface Props extends HTMLNextUIProps<"div"> {
+export interface Props extends Omit<HTMLNextUIProps<"div">, "onClick"> {
   /**
    * Ref to the DOM node.
    */
@@ -29,12 +34,17 @@ export interface Props extends HTMLNextUIProps<"div"> {
    * @default false
    */
   disableRipple?: boolean;
-
   /**
    * Whether the card should allow text selection on press. (only for pressable cards)
    * @default true
    */
   allowTextSelectionOnPress?: boolean;
+  /**
+   * The native button click event handler.
+   * use `onPress` instead.
+   * @deprecated
+   */
+  onClick?: MouseEventHandler<HTMLButtonElement>;
   /**
    * Classname or List of classes to change the classNames of the element.
    * if `className` is passed, it will be added to the base slot.
@@ -64,13 +74,14 @@ export type ContextType = {
 };
 
 export function useCard(originalProps: UseCardProps) {
+  const globalContext = useProviderContext();
+
   const [props, variantProps] = mapPropsVariants(originalProps, card.variantKeys);
 
   const {
     ref,
     as,
     children,
-    disableRipple = false,
     onClick,
     onPress,
     autoFocus,
@@ -84,22 +95,28 @@ export function useCard(originalProps: UseCardProps) {
   const Component = as || (originalProps.isPressable ? "button" : "div");
   const shouldFilterDOMProps = typeof Component === "string";
 
+  const disableAnimation =
+    originalProps.disableAnimation ?? globalContext?.disableAnimation ?? false;
+  const disableRipple = originalProps.disableRipple ?? globalContext?.disableRipple ?? false;
+
   const baseStyles = clsx(classNames?.base, className);
 
-  const {onClick: onRippleClickHandler, onClear: onClearRipple, ripples} = useRipple();
+  const {onClear: onClearRipple, onPress: onRipplePressHandler, ripples} = useRipple();
 
-  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (!originalProps.disableAnimation && !disableRipple && domRef.current) {
-      onRippleClickHandler(e);
-    }
-  };
+  const handlePress = useCallback(
+    (e: PressEvent) => {
+      if (disableRipple || disableAnimation) return;
+      domRef.current && onRipplePressHandler(e);
+    },
+    [disableRipple, disableAnimation, domRef, onRipplePressHandler],
+  );
 
   const {buttonProps, isPressed} = useAriaButton(
     {
-      onPress,
+      onPress: chain(onPress, handlePress),
       elementType: as,
       isDisabled: !originalProps.isPressable,
-      onClick: chain(onClick, handleClick),
+      onClick: onClick,
       allowTextSelectionOnPress,
       ...otherProps,
     } as unknown as AriaButtonProps<"button">,
@@ -119,25 +136,26 @@ export function useCard(originalProps: UseCardProps) {
     () =>
       card({
         ...variantProps,
+        disableAnimation,
       }),
-    [...Object.values(variantProps)],
+    [objectToDeps(variantProps), disableAnimation],
   );
 
   const context = useMemo<ContextType>(
     () => ({
-      isDisabled: originalProps.isDisabled,
-      isFooterBlurred: originalProps.isFooterBlurred,
-      disableAnimation: originalProps.disableAnimation,
-      fullWidth: originalProps.fullWidth,
       slots,
       classNames,
+      disableAnimation,
+      isDisabled: originalProps.isDisabled,
+      isFooterBlurred: originalProps.isFooterBlurred,
+      fullWidth: originalProps.fullWidth,
     }),
     [
       slots,
       classNames,
       originalProps.isDisabled,
       originalProps.isFooterBlurred,
-      originalProps.disableAnimation,
+      disableAnimation,
       originalProps.fullWidth,
     ],
   );
@@ -194,11 +212,11 @@ export function useCard(originalProps: UseCardProps) {
     children,
     isHovered,
     isPressed,
+    disableAnimation,
     isPressable: originalProps.isPressable,
     isHoverable: originalProps.isHoverable,
-    disableAnimation: originalProps.disableAnimation,
     disableRipple,
-    handleClick,
+    handlePress,
     isFocusVisible,
     getCardProps,
     getRippleProps,

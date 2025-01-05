@@ -1,9 +1,11 @@
 /**
  * Part of this code is taken from @chakra-ui/react package ❤️
  */
+
 import type {ImgHTMLAttributes, SyntheticEvent} from "react";
 
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useRef, useState, useEffect, MutableRefObject} from "react";
+import {useIsHydrated} from "@nextui-org/react-utils";
 import {useSafeLayoutEffect} from "@nextui-org/use-safe-layout-effect";
 
 type NativeImageProps = ImgHTMLAttributes<HTMLImageElement>;
@@ -46,7 +48,6 @@ type Status = "loading" | "failed" | "pending" | "loaded";
 export type FallbackStrategy = "onError" | "beforeLoadOrError";
 
 type ImageEvent = SyntheticEvent<HTMLImageElement, Event>;
-
 /**
  * React hook that loads an image in the browser,
  * and lets us know the `status` so we can show image
@@ -63,43 +64,29 @@ type ImageEvent = SyntheticEvent<HTMLImageElement, Event>;
  * }
  * ```
  */
+
 export function useImage(props: UseImageProps = {}) {
-  const {loading, src, srcSet, onLoad, onError, crossOrigin, sizes, ignoreFallback} = props;
+  const {onLoad, onError, ignoreFallback} = props;
+
+  const isHydrated = useIsHydrated();
+
+  const imageRef = useRef<HTMLImageElement | null>(isHydrated ? new Image() : null);
 
   const [status, setStatus] = useState<Status>("pending");
 
   useEffect(() => {
-    setStatus(src ? "loading" : "pending");
-  }, [src]);
-
-  const imageRef = useRef<HTMLImageElement | null>();
-
-  const load = useCallback(() => {
-    if (!src) return;
-
-    flush();
-
-    const img = new Image();
-
-    img.src = src;
-    if (crossOrigin) img.crossOrigin = crossOrigin;
-    if (srcSet) img.srcset = srcSet;
-    if (sizes) img.sizes = sizes;
-    if (loading) img.loading = loading;
-
-    img.onload = (event) => {
+    if (!imageRef.current) return;
+    imageRef.current.onload = (event) => {
       flush();
       setStatus("loaded");
       onLoad?.(event as unknown as ImageEvent);
     };
-    img.onerror = (error) => {
+    imageRef.current.onerror = (error) => {
       flush();
       setStatus("failed");
       onError?.(error as any);
     };
-
-    imageRef.current = img;
-  }, [src, crossOrigin, srcSet, sizes, onLoad, onError, loading]);
+  }, [imageRef.current]);
 
   const flush = () => {
     if (imageRef.current) {
@@ -110,26 +97,41 @@ export function useImage(props: UseImageProps = {}) {
   };
 
   useSafeLayoutEffect(() => {
-    /**
-     * If user opts out of the fallback/placeholder
-     * logic, let's bail out.
-     */
-    if (ignoreFallback) return undefined;
-
-    if (status === "loading") {
-      load();
+    if (isHydrated) {
+      setStatus(setImageAndGetInitialStatus(props, imageRef));
     }
-
-    return () => {
-      flush();
-    };
-  }, [status, load, ignoreFallback]);
+  }, [isHydrated]);
 
   /**
    * If user opts out of the fallback/placeholder
    * logic, let's just return 'loaded'
    */
   return ignoreFallback ? "loaded" : status;
+}
+
+function setImageAndGetInitialStatus(
+  props: UseImageProps,
+  imageRef: MutableRefObject<HTMLImageElement | null | undefined>,
+): Status {
+  const {loading, src, srcSet, crossOrigin, sizes, ignoreFallback} = props;
+
+  if (!src) return "pending";
+  if (ignoreFallback) return "loaded";
+
+  const img = new Image();
+
+  img.src = src;
+  if (crossOrigin) img.crossOrigin = crossOrigin;
+  if (srcSet) img.srcset = srcSet;
+  if (sizes) img.sizes = sizes;
+  if (loading) img.loading = loading;
+
+  imageRef.current = img;
+  if (img.complete && img.naturalWidth) {
+    return "loaded";
+  }
+
+  return "loading";
 }
 
 export const shouldShowFallbackImage = (status: Status, fallbackStrategy: FallbackStrategy) =>

@@ -3,7 +3,6 @@
 /* eslint-disable react/display-name */
 import {useMemo, useState} from "react";
 import {Tabs, Tab, Card, CardBody, Image, Button, RadioGroup, Radio} from "@nextui-org/react";
-import get from "lodash/get";
 import NextLink from "next/link";
 import NextImage from "next/image";
 
@@ -14,7 +13,6 @@ import {PaletteIcon, MagicIcon, GamingConsoleIcon, StarIcon} from "@/components/
 import {NextUILogo, CodeWindow} from "@/components";
 import landingContent from "@/content/landing";
 import {useIsMobile} from "@/hooks/use-media-query";
-import {trackEvent} from "@/utils/va";
 
 const themesTabs = (isMobile: boolean) => [
   {
@@ -88,12 +86,6 @@ const CustomThemesExample = ({
 
   const onSelectionChange = (value: React.Key) => {
     onChangeTheme(value as Theme);
-
-    trackEvent("CustomThemes - Selection", {
-      action: "change_theme",
-      category: "landing-page",
-      data: value,
-    });
   };
 
   return (
@@ -245,7 +237,7 @@ export const CustomThemes = () => {
           <CodeWindow
             showWindowIcons
             className="max-h-[440px] min-h-[390px]"
-            highlightLines={get(codeHighlights, selectedTheme)}
+            highlightLines={codeHighlights[selectedTheme]}
             isScrollable={false}
             language="jsx"
             title="tailwind.config.js"

@@ -5,21 +5,18 @@
 
 import Color from "color";
 import plugin from "tailwindcss/plugin.js";
-import get from "lodash.get";
-import omit from "lodash.omit";
-import forEach from "lodash.foreach";
-import mapKeys from "lodash.mapkeys";
-import kebabCase from "lodash.kebabcase";
 import deepMerge from "deepmerge";
+import {omit, kebabCase, mapKeys} from "@nextui-org/shared-utils";
 
 import {semanticColors, commonColors} from "./colors";
 import {animations} from "./animations";
 import {utilities} from "./utilities";
 import {flattenThemeObject} from "./utils/object";
-import {createSpacingUnits, generateSpacingScale, isBaseTheme} from "./utils/theme";
+import {isBaseTheme} from "./utils/theme";
 import {ConfigTheme, ConfigThemes, DefaultThemeType, NextUIPluginConfig} from "./types";
 import {lightLayout, darkLayout, defaultLayout} from "./default-layout";
 import {baseStyles} from "./utils/classes";
+import {DEFAULT_TRANSITION_DURATION} from "./utilities/transition";
 
 const DEFAULT_PREFIX = "nextui";
 
@@ -62,7 +59,7 @@ const resolveConfig = (
     // flatten color definitions
     const flatColors = flattenThemeObject(colors) as Record<string, string>;
 
-    const flatLayout = layout ? mapKeys(layout, (value, key) => kebabCase(key)) : {};
+    const flatLayout = layout ? mapKeys(layout, (_, key) => kebabCase(key)) : {};
 
     // resolved.variants
     resolved.variants.push({
@@ -78,7 +75,7 @@ const resolveConfig = (
 
       try {
         const parsedColor =
-          parsedColorsCache[colorValue] || Color(colorValue).hsl().round().array();
+          parsedColorsCache[colorValue] || Color(colorValue).hsl().round(2).array();
 
         parsedColorsCache[colorValue] = parsedColor;
 
@@ -129,26 +126,13 @@ const resolveConfig = (
           resolved.utilities[cssSelector]![nestedLayoutVariable] = nestedValue;
         }
       } else {
-        // Process base units and spacing scale
-        if (key === "spacing-unit") {
-          resolved.utilities[cssSelector]![layoutVariablePrefix] = value; // Add the base unit
+        // Handle opacity values and other singular layout values
+        const formattedValue =
+          layoutVariablePrefix.includes("opacity") && typeof value === "number"
+            ? value.toString().replace(/^0\./, ".")
+            : value;
 
-          const spacingScale = generateSpacingScale(Number(value));
-
-          for (const [scaleKey, scaleValue] of Object.entries(spacingScale)) {
-            const spacingVariable = `${layoutVariablePrefix}-${scaleKey}`;
-
-            resolved.utilities[cssSelector]![spacingVariable] = scaleValue;
-          }
-        } else {
-          // Handle opacity values and other singular layout values
-          const formattedValue =
-            layoutVariablePrefix.includes("opacity") && typeof value === "number"
-              ? value.toString().replace(/^0\./, ".")
-              : value;
-
-          resolved.utilities[cssSelector]![layoutVariablePrefix] = formattedValue;
-        }
+        resolved.utilities[cssSelector]![layoutVariablePrefix] = formattedValue;
       }
     }
   }
@@ -163,24 +147,9 @@ const corePlugin = (
   addCommonColors: boolean,
 ) => {
   const resolved = resolveConfig(themes, defaultTheme, prefix);
-  const minSizes = {
-    "unit-1": `var(--${prefix}-spacing-unit)`,
-    "unit-2": `var(--${prefix}-spacing-unit-2`,
-    "unit-3": `var(--${prefix}-spacing-unit-3)`,
-    "unit-3.5": `var(--${prefix}-spacing-unit-3_5)`,
-    "unit-4": `var(--${prefix}-spacing-unit-4)`,
-    "unit-5": `var(--${prefix}-spacing-unit-5)`,
-    "unit-6": `var(--${prefix}-spacing-unit-6)`,
-    "unit-7": `var(--${prefix}-spacing-unit-7)`,
-    "unit-8": `var(--${prefix}-spacing-unit-8)`,
-    "unit-9": `var(--${prefix}-spacing-unit-9)`,
-    "unit-10": `var(--${prefix}-spacing-unit-10)`,
-    "unit-11": `var(--${prefix}-spacing-unit-11)`,
-    "unit-12": `var(--${prefix}-spacing-unit-12)`,
-    "unit-16": `var(--${prefix}-spacing-unit-16)`,
-    "unit-20": `var(--${prefix}-spacing-unit-20)`,
-    "unit-24": `var(--${prefix}-spacing-unit-24)`,
-  };
+
+  const createStripeGradient = (stripeColor: string, backgroundColor: string) =>
+    `linear-gradient(45deg,  hsl(var(--${prefix}-${stripeColor})) 25%,  hsl(var(--${prefix}-${backgroundColor})) 25%,  hsl(var(--${prefix}-${backgroundColor})) 50%,  hsl(var(--${prefix}-${stripeColor})) 50%,  hsl(var(--${prefix}-${stripeColor})) 75%,  hsl(var(--${prefix}-${backgroundColor})) 75%,  hsl(var(--${prefix}-${backgroundColor})))`;
 
   return plugin(
     ({addBase, addUtilities, addVariant}) => {
@@ -217,16 +186,6 @@ const corePlugin = (
           width: {
             divider: `var(--${prefix}-divider-weight)`,
           },
-          spacing: {
-            unit: `var(--${prefix}-spacing-unit)`,
-            ...createSpacingUnits(prefix),
-          },
-          minWidth: {
-            ...minSizes,
-          },
-          minHeight: {
-            ...minSizes,
-          },
           fontSize: {
             tiny: [`var(--${prefix}-font-size-tiny)`, `var(--${prefix}-line-height-tiny)`],
             small: [`var(--${prefix}-font-size-small)`, `var(--${prefix}-line-height-small)`],
@@ -256,14 +215,22 @@ const corePlugin = (
             medium: `var(--${prefix}-box-shadow-medium)`,
             large: `var(--${prefix}-box-shadow-large)`,
           },
+          backgroundSize: {
+            "stripe-size": "1.25rem 1.25rem",
+          },
           backgroundImage: {
-            "stripe-gradient":
-              "linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%, transparent 50%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.1) 75%, transparent 75%, transparent)",
+            "stripe-gradient-default": createStripeGradient("default-200", "default-400"),
+            "stripe-gradient-primary": createStripeGradient("primary-200", "primary"),
+            "stripe-gradient-secondary": createStripeGradient("secondary-200", "secondary"),
+            "stripe-gradient-success": createStripeGradient("success-200", "success"),
+            "stripe-gradient-warning": createStripeGradient("warning-200", "warning"),
+            "stripe-gradient-danger": createStripeGradient("danger-200", "danger"),
           },
           transitionDuration: {
             0: "0ms",
             250: "250ms",
             400: "400ms",
+            DEFAULT: DEFAULT_TRANSITION_DURATION,
           },
           transitionTimingFunction: {
             "soft-spring": "cubic-bezier(0.155, 1.105, 0.295, 1.12)",
@@ -285,8 +252,8 @@ export const nextui = (config: NextUIPluginConfig = {}): ReturnType<typeof plugi
     addCommonColors = false,
   } = config;
 
-  const userLightColors = get(themeObject, "light.colors", {});
-  const userDarkColors = get(themeObject, "dark.colors", {});
+  const userLightColors = themeObject?.light?.colors || {};
+  const userDarkColors = themeObject?.dark?.colors || {};
 
   const defaultLayoutObj =
     userLayout && typeof userLayout === "object"
@@ -307,7 +274,7 @@ export const nextui = (config: NextUIPluginConfig = {}): ReturnType<typeof plugi
   // get other themes from the config different from light and dark
   let otherThemes = omit(themeObject, ["light", "dark"]) || {};
 
-  forEach(otherThemes, ({extend, colors, layout}, themeName) => {
+  Object.entries(otherThemes).forEach(([themeName, {extend, colors, layout}]) => {
     const baseTheme = extend && isBaseTheme(extend) ? extend : defaultExtendTheme;
 
     if (colors && typeof colors === "object") {
@@ -322,12 +289,12 @@ export const nextui = (config: NextUIPluginConfig = {}): ReturnType<typeof plugi
   });
 
   const light: ConfigTheme = {
-    layout: deepMerge(baseLayouts.light, get(themeObject, "light.layout", {})),
+    layout: deepMerge(baseLayouts.light, themeObject?.light?.layout || {}),
     colors: deepMerge(semanticColors.light, userLightColors),
   };
 
   const dark = {
-    layout: deepMerge(baseLayouts.dark, get(themeObject, "dark.layout", {})),
+    layout: deepMerge(baseLayouts.dark, themeObject?.dark?.layout || {}),
     colors: deepMerge(semanticColors.dark, userDarkColors),
   };
 

@@ -13,22 +13,35 @@
           "path": "/docs/guide/introduction.mdx"
         },
         {
-          "key": "installation",
-          "title": "Installation",
-          "keywords": "getting started, installation, start, nextui",
-          "path": "/docs/guide/installation.mdx"
-        },
-        {
           "key": "design-principles",
           "title": "Design Principles",
           "keywords": "design principles, nextui",
           "path": "/docs/guide/design-principles.mdx"
         },
         {
+          "key": "installation",
+          "title": "Installation",
+          "keywords": "getting started, installation, start, nextui",
+          "path": "/docs/guide/installation.mdx"
+        },
+        {
+          "key": "cli",
+          "title": "CLI",
+          "keywords": "cli, command line interface",
+          "path": "/docs/guide/cli.mdx"
+        },
+        {
           "key": "routing",
           "title": "Routing",
           "keywords": "client side routing, routing, browser routing, nextui, next.js router, react router, remix router",
           "path": "/docs/guide/routing.mdx",
+          "updated": true
+        },
+        {
+          "key": "forms",
+          "title": "Forms",
+          "keywords": "forms, form validation, nextui",
+          "path": "/docs/guide/forms.mdx",
           "newPost": true
         },
         {
@@ -68,6 +81,13 @@
           "title": "Astro",
           "keywords": "astro, nextui",
           "path": "/docs/frameworks/astro.mdx"
+        },
+        {
+          "key": "laravel",
+          "title": "Laravel",
+          "keywords": "laravel, nextui",
+          "path": "/docs/frameworks/laravel.mdx",
+          "newPost": true
         }
       ]
     },
@@ -85,7 +105,8 @@
         {
           "key": "layout",
           "title": "Layout",
-          "path": "/docs/customization/layout.mdx"
+          "path": "/docs/customization/layout.mdx",
+          "updated": true
         },
         {
           "key": "colors",
@@ -105,7 +126,8 @@
         {
           "key": "dark-mode",
           "title": "Dark mode",
-          "path": "/docs/customization/dark-mode.mdx"
+          "path": "/docs/customization/dark-mode.mdx",
+          "updated": true
         },
         {
           "key": "override-styles",
@@ -126,12 +148,6 @@
       "defaultOpen": true,
       "routes": [
         {
-          "key": "avatar",
-          "title": "Avatar",
-          "keywords": "avatar, profile picture, user representation, identity",
-          "path": "/docs/components/avatar.mdx"
-        },
-        {
           "key": "accordion",
           "title": "Accordion",
           "keywords": "accordion, collapse, expandable sections, content hiding",
@@ -142,7 +158,20 @@
           "title": "Autocomplete",
           "keywords": "autocomplete, auto suggest, search, typeahead",
           "path": "/docs/components/autocomplete.mdx",
+          "updated": true
+        },
+        {
+          "key": "alert",
+          "title": "Alert",
+          "keywords": "alert, notification, message",
+          "path": "/docs/components/alert.mdx",
           "newPost": true
+        },
+        {
+          "key": "avatar",
+          "title": "Avatar",
+          "keywords": "avatar, profile picture, user representation, identity",
+          "path": "/docs/components/avatar.mdx"
         },
         {
           "key": "badge",
@@ -151,17 +180,23 @@
           "path": "/docs/components/badge.mdx"
         },
         {
-          "key": "button",
-          "title": "Button",
-          "keywords": "button, interactive, action trigger, click events",
-          "path": "/docs/components/button.mdx"
-        },
-        {
           "key": "breadcrumbs",
           "title": "Breadcrumbs",
           "keywords": "breadcrumbs, navigation, path, trail, location",
-          "path": "/docs/components/breadcrumbs.mdx",
-          "newPost": true
+          "path": "/docs/components/breadcrumbs.mdx"
+        },
+        {
+          "key": "button",
+          "title": "Button",
+          "keywords": "button, interactive, action trigger, click events",
+          "path": "/docs/components/button.mdx",
+          "updated": true
+        },
+        {
+          "key": "calendar",
+          "title": "Calendar",
+          "keywords": "calendar, date picker, month picker, year picker",
+          "path": "/docs/components/calendar.mdx"
         },
         {
           "key": "card",
@@ -173,13 +208,15 @@
           "key": "checkbox",
           "title": "Checkbox",
           "keywords": "checkbox, binary choice, selection control, toggle",
-          "path": "/docs/components/checkbox.mdx"
+          "path": "/docs/components/checkbox.mdx",
+          "updated": true
         },
         {
           "key": "checkbox-group",
           "title": "Checkbox Group",
           "keywords": "checkbox group, binary choice, selection control, toggle",
-          "path": "/docs/components/checkbox-group.mdx"
+          "path": "/docs/components/checkbox-group.mdx",
+          "updated": true
         },
         {
           "key": "chip",
@@ -200,6 +237,24 @@
           "path": "/docs/components/code.mdx"
         },
         {
+          "key": "date-input",
+          "title": "Date Input",
+          "keywords": "date-input, time, input, timezone",
+          "path": "/docs/components/date-input.mdx"
+        },
+        {
+          "key": "date-picker",
+          "title": "Date Picker",
+          "keywords": "date-picker, time, input, timezone",
+          "path": "/docs/components/date-picker.mdx"
+        },
+        {
+          "key": "date-range-picker",
+          "title": "Date Range Picker",
+          "keywords": "date-range-picker, date-picker, time, input, timezone",
+          "path": "/docs/components/date-range-picker.mdx"
+        },
+        {
           "key": "divider",
           "title": "Divider",
           "keywords": "divider, boundary, separator, section divider",
@@ -209,8 +264,21 @@
           "key": "dropdown",
           "title": "Dropdown",
           "keywords": "dropdown, menu, selection, option list",
-          "path": "/docs/components/dropdown.mdx",
-          "updated": true
+          "path": "/docs/components/dropdown.mdx"
+        },
+        {
+          "key": "drawer",
+          "title": "Drawer",
+          "keywords": "drawer, panel, slide, overlay",
+          "path": "/docs/components/drawer.mdx",
+          "newPost": true
+        },
+        {
+          "key": "form",
+          "title": "Form",
+          "keywords": "forms, form validation, nextui",
+          "path": "/docs/components/form.mdx",
+          "newPost": true
         },
         {
           "key": "image",
@@ -222,7 +290,15 @@
           "key": "input",
           "title": "Input",
           "keywords": "input, text box, form field, data entry",
-          "path": "/docs/components/input.mdx"
+          "path": "/docs/components/input.mdx",
+          "updated": true
+        },
+        {
+          "key": "input-otp",
+          "title": "Input OTP",
+          "keywords": "input, otp, auth, verification code",
+          "path": "/docs/components/input-otp.mdx",
+          "newPost": true
         },
         {
           "key": "kbd",
@@ -234,8 +310,7 @@
           "key": "link",
           "title": "Link",
           "keywords": "link, navigation, href, web page connection",
-          "path": "/docs/components/link.mdx",
-          "updated": true
+          "path": "/docs/components/link.mdx"
         },
         {
           "key": "listbox",
@@ -248,7 +323,8 @@
           "key": "modal",
           "title": "Modal",
           "keywords": "modal, dialog box, popup, overlay, content focus",
-          "path": "/docs/components/modal.mdx"
+          "path": "/docs/components/modal.mdx",
+          "updated": true
         },
         {
           "key": "navbar",
@@ -278,13 +354,27 @@
           "key": "radio-group",
           "title": "Radio Group",
           "keywords": "radio group, selection set, option selection, exclusive choices",
-          "path": "/docs/components/radio-group.mdx"
+          "path": "/docs/components/radio-group.mdx",
+          "updated": true
+        },
+        {
+          "key": "range-calendar",
+          "title": "Range Calendar",
+          "keywords": "range calendar, date picker, month picker, year picker",
+          "path": "/docs/components/range-calendar.mdx"
+        },
+        {
+          "key": "scroll-shadow",
+          "title": "Scroll Shadow",
+          "keywords": "scroll shadow, scroll indicator, scroll bar, scroll position",
+          "path": "/docs/components/scroll-shadow.mdx"
         },
         {
           "key": "select",
           "title": "Select",
           "keywords": "select, selection, option list, multiple choice",
-          "path": "/docs/components/select.mdx"
+          "path": "/docs/components/select.mdx",
+          "updated": true
         },
         {
           "key": "skeleton",
@@ -293,16 +383,16 @@
           "path": "/docs/components/skeleton.mdx"
         },
         {
+          "key": "slider",
+          "title": "Slider",
+          "keywords": "slider, range input, value selector, sliding control",
+          "path": "/docs/components/slider.mdx"
+        },
+        {
           "key": "snippet",
           "title": "Snippet",
           "keywords": "snippet, code block, programming, code example",
           "path": "/docs/components/snippet.mdx"
-        },
-        {
-          "key": "scroll-shadow",
-          "title": "Scroll Shadow",
-          "keywords": "scroll shadow, scroll indicator, scroll bar, scroll position",
-          "path": "/docs/components/scroll-shadow.mdx"
         },
         {
           "key": "spacer",
@@ -320,14 +410,8 @@
           "key": "switch",
           "title": "Switch",
           "keywords": "switch, toggle, binary input, on/off control",
-          "path": "/docs/components/switch.mdx"
-        },
-        {
-          "key": "slider",
-          "title": "Slider",
-          "keywords": "slider, range input, value selector, sliding control",
-          "path": "/docs/components/slider.mdx",
-          "newPost": true
+          "path": "/docs/components/switch.mdx",
+          "updated": true
         },
         {
           "key": "table",
@@ -339,8 +423,14 @@
           "key": "tabs",
           "title": "Tabs",
           "keywords": "tabs, section navigation, categorized content, tabbed interface",
-          "path": "/docs/components/tabs.mdx",
-          "updated": true
+          "path": "/docs/components/tabs.mdx"
+        },
+        {
+          "key": "toast",
+          "title": "Toast",
+          "keywords": "toast, notification, message",
+          "path": "/docs/components/toast.mdx",
+          "comingSoon": true
         },
         {
           "key": "textarea",
@@ -348,6 +438,12 @@
           "keywords": "textarea, multi-line text input, large text field, form control",
           "path": "/docs/components/textarea.mdx",
           "updated": true
+        },
+        {
+          "key": "time-input",
+          "title": "Time Input",
+          "keywords": "timeinput, time, input, timezone",
+          "path": "/docs/components/time-input.mdx"
         },
         {
           "key": "tooltip",
@@ -360,6 +456,28 @@
           "title": "User",
           "keywords": "user, account, user profile, identity",
           "path": "/docs/components/user.mdx"
+        }
+      ]
+    },
+    {
+      "key": "api-references",
+      "title": "API References",
+      "defaultOpen": true,
+      "keywords": "api references, nextui, api",
+      "routes": [
+        {
+          "key": "cli-api",
+          "title": "NextUI CLI",
+          "keywords": "api references, nextui, api, cli",
+          "path": "/docs/api-references/cli-api.mdx",
+          "updated": true
+        },
+        {
+          "key": "nextui-provider",
+          "title": "NextUI Provider",
+          "keywords": "api references, nextui, api, nextui provider",
+          "path": "/docs/api-references/nextui-provider.mdx",
+          "updated": true
         }
       ]
     }
@@ -394,6 +512,12 @@
           "title": "Figma",
           "keywords": "figma, nextui, design, ui kit",
           "path": "/figma"
+        },
+        {
+          "key": "roadmap",
+          "title": "Roadmap",
+          "keywords": "roadmap, nextui",
+          "path": "#"
         }
       ]
     }

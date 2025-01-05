@@ -17,7 +17,7 @@ module.exports = {
     "./layouts/**/*.{js,ts,jsx,tsx,mdx}",
     "./libs/**/*.{js,ts,jsx,tsx,mdx}",
     "./content/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}"
+    "./node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
   darkMode: "class",
   theme: {
@@ -62,8 +62,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ["var(--font-sans)", ...defaultTheme.fontFamily.sans],
+        mono: ["var(--font-mono)", ...defaultTheme.fontFamily.mono],
         serif: defaultTheme.fontFamily.serif,
-        mono: defaultTheme.fontFamily.mono,
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
@@ -100,7 +100,7 @@ module.exports = {
             },
             "h3 a": {
               fontSize: "1.25rem !important",
-              fontWeight: theme("fontWeight.medium"),
+              fontWeight: theme("fontWeight.bold"),
             },
             "h2 small, h3 small, h4 small": {
               fontFamily: theme("fontFamily.mono").join(", "),
@@ -118,6 +118,9 @@ module.exports = {
             "h4 small": {
               fontSize: theme("fontSize.sm")[0],
               ...theme("fontSize.sm")[1],
+            },
+            "h4 a": {
+              fontWeight: theme("fontWeight.bold"),
             },
             "h2, h3, h4": {
               "scroll-margin-top": "var(--scroll-mt)",
@@ -147,8 +150,8 @@ module.exports = {
               fontWeight: "inherit",
             },
             strong: {
-              color: theme("colors.cyan.600"),
-              fontWeight: theme("fontWeight.semibold"),
+              color: "hsl(var(--nextui-foreground))",
+              fontWeight: theme("fontWeight.bold"),
             },
             "a strong": {
               color: "inherit",
@@ -168,7 +171,7 @@ module.exports = {
               display: "flex",
               fontSize: theme("fontSize.sm")[0],
               backgroundColor: "transparent",
-              fontWeight: theme("fontWeight.light"),
+              fontWeight: theme("fontWeight.medium"),
               padding: 0,
               margin: 0,
             },
@@ -210,6 +213,12 @@ module.exports = {
               fontWeight: theme("fontWeight.normal"),
               fontStyle: "font-normal",
             },
+            "code::before": {
+              content: "",
+            },
+            "code::after": {
+              content: "",
+            },
             "blockquote p:first-of-type::before": {
               content: "",
             },
@@ -222,7 +231,7 @@ module.exports = {
           css: {
             color: "hsl(var(--nextui-default-700))",
             strong: {
-              color: theme("colors.pink.500"),
+              color: "hsl(var(--nextui-cyan-500))",
             },
           },
         },
@@ -305,12 +314,36 @@ module.exports = {
             transform: "scale(1.295)",
           },
         },
+        "text-gradient": {
+          to: {
+            backgroundPosition: "-200% center",
+          },
+        },
+        "scrolling-banner": {
+          from: {transform: "translateX(0)"},
+          to: {transform: "translateX(calc(-50% - var(--gap)/2))"},
+        },
+        "scrolling-banner-vertical": {
+          from: {transform: "translateY(0)"},
+          to: {transform: "translateY(calc(-50% - var(--gap)/2))"},
+        },
+        fadeIn: {
+          "0%": { opacity: 0 },
+          "100%": { opacity: 1 },
+        },
       },
       animation: {
         heartbeat: "heartbeat 1s ease-in-out infinite",
         levitate: "levitate 5s ease infinite",
         expand: "expand 6s ease-out infinite both",
         "expand-opacity": "expand-opacity 6s linear infinite both",
+        "text-gradient": "text-gradient 4s linear 0s infinite normal forwards running",
+        "scrolling-banner": "scrolling-banner var(--duration) linear infinite",
+        "scrolling-banner-vertical": "scrolling-banner-vertical var(--duration) linear infinite",
+        fadeIn: "fadeIn 0.5s ease-in-out forwards",
+      },
+      maxWidth: {
+        "8xl": "90rem", // 1440px
       },
     },
   },
@@ -320,13 +353,15 @@ module.exports = {
       themes: {
         light: {
           colors: {
-            "code-background": "#363449",
+            "code-background": "#262b36",
+            strong: "#ff4ecd",
             "code-mdx": "#ff4ecd",
           },
         },
         dark: {
           colors: {
-            "code-background": "#0D0B0B",
+            strong: "#06B7DB",
+            "code-background": "#111113",
             "code-mdx": "#06B7DB",
           },
         },

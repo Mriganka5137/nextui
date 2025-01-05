@@ -1,19 +1,25 @@
 import type {PopoverVariantProps, SlotsToClasses, PopoverSlots} from "@nextui-org/theme";
 import type {HTMLMotionProps} from "framer-motion";
+import type {PressEvent} from "@react-types/shared";
 
 import {RefObject, Ref, useEffect} from "react";
 import {ReactRef, useDOMRef} from "@nextui-org/react-utils";
 import {OverlayTriggerState, useOverlayTriggerState} from "@react-stately/overlays";
 import {useFocusRing} from "@react-aria/focus";
-import {ariaHideOutside, useOverlayTrigger} from "@react-aria/overlays";
+import {ariaHideOutside, useOverlayTrigger, usePreventScroll} from "@react-aria/overlays";
 import {OverlayTriggerProps} from "@react-types/overlays";
-import {HTMLNextUIProps, mapPropsVariants, PropGetter} from "@nextui-org/system";
-import {getArrowPlacement, getShouldUseAxisPlacement} from "@nextui-org/aria-utils";
+import {
+  HTMLNextUIProps,
+  mapPropsVariants,
+  PropGetter,
+  useProviderContext,
+} from "@nextui-org/system";
+import {getArrowPlacement} from "@nextui-org/aria-utils";
 import {popover} from "@nextui-org/theme";
 import {mergeProps, mergeRefs} from "@react-aria/utils";
-import {clsx, dataAttr} from "@nextui-org/shared-utils";
+import {clsx, dataAttr, objectToDeps} from "@nextui-org/shared-utils";
 import {useMemo, useCallback, useRef} from "react";
-import {PressEvent} from "@react-types/shared";
+import {AriaDialogProps} from "@react-aria/dialog";
 
 import {useReactAriaPopover, ReactAriaPopoverProps} from "./use-aria-popover";
 
@@ -35,6 +41,12 @@ export interface Props extends HTMLNextUIProps<"div"> {
    * @default true
    */
   shouldBlockScroll?: boolean;
+  /**
+   * Custom props to be passed to the dialog container.
+   *
+   * @default {}
+   */
+  dialogProps?: AriaDialogProps;
   /**
    * Type of overlay that is opened by the trigger.
    */
@@ -69,18 +81,22 @@ export interface Props extends HTMLNextUIProps<"div"> {
   onClose?: () => void;
 }
 
+const DEFAULT_PLACEMENT = "top";
+
 export type UsePopoverProps = Props &
   Omit<ReactAriaPopoverProps, "triggerRef" | "popoverRef"> &
   OverlayTriggerProps &
   PopoverVariantProps;
 
 export function usePopover(originalProps: UsePopoverProps) {
+  const globalContext = useProviderContext();
+
   const [props, variantProps] = mapPropsVariants(originalProps, popover.variantKeys);
 
   const {
     as,
-    children,
     ref,
+    children,
     state: stateProp,
     triggerRef: triggerRefProp,
     scrollRef,
@@ -94,7 +110,9 @@ export function usePopover(originalProps: UsePopoverProps) {
     isDismissable = true,
     shouldCloseOnBlur,
     portalContainer,
-    placement: placementProp = "top",
+    updatePositionDeps,
+    dialogProps: dialogPropsProp,
+    placement: placementProp = DEFAULT_PLACEMENT,
     triggerType = "dialog",
     showArrow = false,
     offset = 7,
@@ -102,6 +120,7 @@ export function usePopover(originalProps: UsePopoverProps) {
     boundaryElement,
     isKeyboardDismissDisabled,
     shouldCloseOnInteractOutside,
+    shouldCloseOnScroll,
     motionProps,
     className,
     classNames,
@@ -115,10 +134,10 @@ export function usePopover(originalProps: UsePopoverProps) {
 
   const domTriggerRef = useRef<HTMLElement>(null);
   const wasTriggerPressedRef = useRef(false);
-
   const triggerRef = triggerRefProp || domTriggerRef;
 
-  const disableAnimation = originalProps.disableAnimation ?? false;
+  const disableAnimation =
+    originalProps.disableAnimation ?? globalContext?.disableAnimation ?? false;
 
   const innerState = useOverlayTriggerState({
     isOpen: isOpenProp,
@@ -133,17 +152,13 @@ export function usePopover(originalProps: UsePopoverProps) {
 
   const state = stateProp || innerState;
 
-  const {
-    popoverProps,
-    underlayProps,
-    placement: ariaPlacement,
-  } = useReactAriaPopover(
+  const {popoverProps, underlayProps, placement} = useReactAriaPopover(
     {
       triggerRef,
       isNonModal,
       popoverRef: domRef,
       placement: placementProp,
-      offset: offset,
+      offset,
       scrollRef,
       isDismissable,
       shouldCloseOnBlur,
@@ -151,7 +166,9 @@ export function usePopover(originalProps: UsePopoverProps) {
       crossOffset,
       shouldFlip,
       containerPadding,
+      updatePositionDeps,
       isKeyboardDismissDisabled,
+      shouldCloseOnScroll,
       shouldCloseOnInteractOutside,
     },
     state,
@@ -166,10 +183,14 @@ export function usePopover(originalProps: UsePopoverProps) {
       popover({
         ...variantProps,
       }),
-    [...Object.values(variantProps)],
+    [objectToDeps(variantProps)],
   );
 
   const baseStyles = clsx(classNames?.base, className);
+
+  usePreventScroll({
+    isDisabled: !(shouldBlockScroll && state.isOpen),
+  });
 
   const getPopoverProps: PropGetter = (props = {}) => ({
     ref: domRef,
@@ -178,13 +199,15 @@ export function usePopover(originalProps: UsePopoverProps) {
   });
 
   const getDialogProps: PropGetter = (props = {}) => ({
+    // `ref` and `dialogProps` from `useDialog` are passed from props
+    // if we use `useDialog` here, dialogRef won't be focused on mount
     "data-slot": "base",
     "data-open": dataAttr(state.isOpen),
     "data-focus": dataAttr(isFocused),
     "data-arrow": dataAttr(showArrow),
     "data-focus-visible": dataAttr(isFocusVisible),
-    "data-placement": getArrowPlacement(ariaPlacement, placementProp),
-    ...mergeProps(focusProps, props),
+    "data-placement": getArrowPlacement(placement || DEFAULT_PLACEMENT, placementProp),
+    ...mergeProps(focusProps, dialogPropsProp, props),
     className: slots.base({class: clsx(baseStyles)}),
     style: {
       // this prevent the dialog to have a default outline
@@ -197,15 +220,10 @@ export function usePopover(originalProps: UsePopoverProps) {
       "data-slot": "content",
       "data-open": dataAttr(state.isOpen),
       "data-arrow": dataAttr(showArrow),
-      "data-placement": getArrowPlacement(ariaPlacement, placementProp),
+      "data-placement": getArrowPlacement(placement || DEFAULT_PLACEMENT, placementProp),
       className: slots.content({class: clsx(classNames?.content, props.className)}),
     }),
-    [slots, state.isOpen, showArrow, ariaPlacement, placementProp, classNames],
-  );
-
-  const placement = useMemo(
-    () => (getShouldUseAxisPlacement(ariaPlacement, placementProp) ? ariaPlacement : placementProp),
-    [ariaPlacement, placementProp],
+    [slots, state.isOpen, showArrow, placement, placementProp, classNames],
   );
 
   const onPress = useCallback(
@@ -237,12 +255,19 @@ export function usePopover(originalProps: UsePopoverProps) {
 
   const getTriggerProps = useCallback<PropGetter>(
     (props = {}, _ref: Ref<any> | null | undefined = null) => {
+      const {isDisabled, ...otherProps} = props;
+
       return {
         "data-slot": "trigger",
-        "aria-haspopup": "dialog",
-        ...mergeProps(triggerProps, props),
+        ...mergeProps({"aria-haspopup": "dialog"}, triggerProps, otherProps),
         onPress,
-        className: slots.trigger({class: clsx(classNames?.trigger, props.className)}),
+        isDisabled,
+        className: slots.trigger({
+          class: clsx(classNames?.trigger, props.className),
+          // apply isDisabled class names to make the trigger child disabled
+          // e.g. for elements like div or NextUI elements that don't have `isDisabled` prop
+          isTriggerDisabled: isDisabled,
+        }),
         ref: mergeRefs(_ref, triggerRef),
       };
     },
@@ -282,7 +307,7 @@ export function usePopover(originalProps: UsePopoverProps) {
     classNames,
     showArrow,
     triggerRef,
-    placement,
+    placement: placement || DEFAULT_PLACEMENT,
     isNonModal,
     popoverRef: domRef,
     portalContainer,
